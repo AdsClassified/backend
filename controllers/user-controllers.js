@@ -170,7 +170,12 @@ const signup = async (req, res, next) => {
       });
     }
 
-    let otp = otpGenerator.generate(4, {
+    let otpEmail = otpGenerator.generate(4, {
+      upperCase: false,
+      specialChars: false,
+      alphabets: false,
+    });
+    let otpPhone = otpGenerator.generate(4, {
       upperCase: false,
       specialChars: false,
       alphabets: false,
@@ -183,7 +188,8 @@ const signup = async (req, res, next) => {
       phone,
       emailVerified: false,
       phoneVerified: false,
-      otp: otp,
+      otpEmail: otpEmail,
+      otpPhone: otpPhone,
     });
 
     try {
@@ -219,8 +225,8 @@ const signup = async (req, res, next) => {
     }
     console.log({ message: "user created", createdUser });
 
-    sendEmailOtp(email, otp);
-    sendPhoneOtp(phone, otp);
+    sendEmailOtp(email, otpEmail);
+    sendPhoneOtp(phone, otpPhone);
 
     res.status(200).send({
       message: "Welcome to VINTED.CI",
@@ -331,6 +337,7 @@ const login = async (req, res, next) => {
       emailVerified: existingUser.emailVerified,
       phoneVerified: existingUser.phoneVerified,
       favourites: existingUser.favourites,
+      profileImage: existingUser.profileImage,
     });
   } else {
     try {
@@ -403,6 +410,7 @@ const login = async (req, res, next) => {
       emailVerified: existingUser.emailVerified,
       phoneVerified: existingUser.phoneVerified,
       favourites: existingUser.favourites,
+      profileImage: existingUser.profileImage,
     });
   }
 };
@@ -412,23 +420,29 @@ const emailverify = async (req, res) => {
   let user;
 
   try {
-    user = await User.findOne({ email: email });
+    user = await User.findOne({ email: email }, "-password");
     console.log(user);
     if (user) {
-      if (user.otp === otp) {
+      if (user.otpEmail === otp) {
         User.update(
           { email: email },
           { $set: { emailVerified: true } },
           function (err) {
             if (!err) {
-              return res.json({ status: "success", message: "Email Verified" });
+              return res.json({
+                success: true,
+                message: "Email Verified",
+              });
             }
           }
         );
+      } else {
+        res.json({ success: false, message: "Otp Wrong" });
+        return;
       }
     }
   } catch (err) {
-    return res.json({ status: "Error", message: "Somthing went wrong" });
+    return res.json({ success: false, message: "Somthing went wrong" });
   }
 };
 
@@ -436,23 +450,30 @@ const phoneverify = async (req, res) => {
   const { otp, phone } = req.body;
   console.log(otp, phone);
   try {
-    user = await User.findOne({ phone: phone });
+    user = await User.findOne({ phone: phone }, "-password");
     console.log(user);
     if (user) {
-      if (user.otp === otp) {
+      if (user.otpPhone === otp) {
         User.update(
           { phone: phone },
           { $set: { phoneVerified: true } },
           function (err) {
             if (!err) {
-              return res.json({ status: "success", message: "phone Verified" });
+              return res.json({
+                success: true,
+                message: "phone Verified",
+                user: user,
+              });
             }
           }
         );
+      } else {
+        res.json({ success: false, message: "Otp Wrong" });
+        return;
       }
     }
   } catch (err) {
-    return res.json({ status: "Error", message: "Somthing went wrong" });
+    return res.json({ success: false, message: "Somthing went wrong" });
   }
 };
 
@@ -627,6 +648,151 @@ const deleteFavourite = async (req, res) => {
   // }
 };
 
+const getMessages = async (req, res) => {
+  console.log(req.body);
+
+  try {
+    let user = await User.findOne({ _id: req.body.id });
+    if (user) {
+      res.json({
+        success: true,
+        message: "messages Found",
+        messages: user.messages,
+      });
+    } else {
+      res.json({
+        success: false,
+        message: "Something went wrong",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
+};
+
+const updateImage = (req, res) => {
+  // console.log(req.body);
+
+  const { userId, image } = req.body;
+  console.log(userId);
+
+  User.update(
+    { _id: userId },
+    { $set: { profileImage: image } },
+    function (err) {
+      if (!err) {
+        console.log("Profile Pic Updated");
+        return res.json({ success: true, message: "Profile Pic Updated" });
+      } else {
+        res.json({
+          success: false,
+          message: "Something went wrong",
+        });
+        return;
+      }
+    }
+  );
+};
+
+const getSearchActivity = async (req, res) => {
+  console.log(req.body);
+
+  const { id } = req.body;
+  try {
+    let user = await User.findOne({ _id: id });
+    if (user) {
+      res.json({
+        success: true,
+        searchActivity: user.searchActivity,
+        message: "Activity Found",
+      });
+    } else {
+      res.json({
+        success: false,
+        message: "Activity not Found Something went wrong",
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+const fbLogin = async (req, res) => {
+  // console.log(req.body);
+
+  const { name, email, id, accessToken, picture } = req.body;
+  console.log(email);
+
+  try {
+    console.log("finding user");
+    let user = await User.findOne({ email: email });
+
+    if (user) {
+      console.log("user found");
+      res.json({
+        username: user.username,
+        email: user.email,
+        access_token: accessToken,
+        id: user._id,
+        phone: user.phone,
+        success: true,
+        emailVerified: user.emailVerified,
+        phoneVerified: user.phoneVerified,
+        favourites: user.favourites,
+        profileImage: user.profileImage,
+        success: true,
+        message: "Logedin SuccessFully",
+      });
+    } else {
+      const createdUser = new User({
+        username: name,
+        email: email,
+        password: "signedupwithfb",
+        emailVerified: true,
+        phoneVerified: true,
+        otpEmail: 1234,
+        otpPhone: 1234,
+        profileImage: picture.data.url,
+      });
+
+      try {
+        createdUser.save();
+      } catch (err) {
+        // res.status(500).json({
+        //   message: "Signing up failed, please try again later.",
+        //   error: "500",
+        // });
+        // return;
+        res.json({
+          success: false,
+          data: err,
+          message: "Signing up failed, please try again later.",
+        });
+        return;
+      }
+
+      res.send({
+        message: "Welcome to VINTED.CI",
+
+        username: createdUser.username,
+        email: createdUser.email,
+        access_token: accessToken,
+        id: createdUser._id,
+        phone: createdUser.phone,
+        success: true,
+        emailVerified: createdUser.emailVerified,
+        phoneVerified: createdUser.phoneVerified,
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   getUsers,
   signup,
@@ -637,4 +803,8 @@ module.exports = {
   updateUserPassword,
   saveFavourite,
   deleteFavourite,
+  getMessages,
+  updateImage,
+  getSearchActivity,
+  fbLogin,
 };

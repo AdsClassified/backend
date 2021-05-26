@@ -279,6 +279,7 @@ const search = async (req, res) => {
   // let db = req.app.get("db");
 
   const { searchValue, price, negotiable } = req.body.search;
+  const { userId } = req.body;
   let yoo;
 
   // let searchPattern = new RegExp("^" + search);
@@ -311,6 +312,31 @@ const search = async (req, res) => {
       success: true,
       message: "Ads Found",
     });
+    if (userId) {
+      console.log("in search activity");
+      try {
+        let user = await User.findOne({ _id: userId });
+
+        // console.log(user);
+        User.update(
+          { _id: userId },
+          { $set: { searchActivity: [...user.searchActivity, searchValue] } },
+          function (err) {
+            if (!err) {
+              console.log("user added");
+              // return res.json({
+              //   success: true,
+              //   message: "Search Query added to search Activity",
+              // });
+            } else {
+              console.log(err);
+            }
+          }
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    }
   } else {
     console.log(err);
     res.json({
@@ -322,14 +348,15 @@ const search = async (req, res) => {
 };
 
 const sendMessage = async (req, res) => {
-  console.log(req.body);
-  const { phone, message, email } = req.body;
+  // console.log(req.body);
+  const { phone, message, email, adData, userId } = req.body;
+  console.log(phone, message, email, userId);
 
-  if (phone && message && email) {
+  if ((message && email, userId)) {
     const output = `
             <p>You have a got a Query</p>
             <h3>Vinted</h3>
-            <ul>  
+            <ul>
               <li></li>
             </ul>
             <h3>Contact Him/Her Here</h3>
@@ -364,12 +391,93 @@ const sendMessage = async (req, res) => {
     // send mail with defined transport object
     transporter.sendMail(mailOptions, async (error, info) => {
       if (error) {
+        res.json({ success: false, message: "Something went Wrong" });
         return error;
       } else {
         console.log("Message sent: %s", info.messageId);
         console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 
-        res.json({ success: true, message: "Message Sent to Ad Holder" });
+        try {
+          let user = await User.findOne({ _id: userId });
+          console.log("user found");
+
+          let yoo = false;
+          user.messages.map((msg, i) => {
+            if (msg.email === email) {
+              console.log("in IF");
+              yoo = true;
+              return;
+            }
+          });
+
+          console.log(yoo);
+
+          if (user) {
+            if (yoo) {
+              console.log("yoo found");
+              let existMsgs = user.messages;
+              console.log(existMsgs[0].messages, "Before");
+              existMsgs.map((msg) => {
+                console.log(msg.messages, "inside loop");
+                if (msg.email === email) {
+                  msg.messages.push(message);
+                  return;
+                }
+              });
+
+              console.log(existMsgs[0].messages, "After");
+
+              User.update(
+                { _id: userId },
+                {
+                  $set: {
+                    messages: [...existMsgs],
+                  },
+                },
+                function (err) {
+                  if (!err) {
+                    console.log("Message Sent");
+                    return res.json({ success: true, message: "Message Sent" });
+                  } else {
+                    res.json({
+                      success: false,
+                      message: "Something went wrong",
+                    });
+                    return;
+                  }
+                }
+              );
+            } else {
+              console.log("yoo not foound");
+              User.update(
+                { _id: userId },
+                {
+                  $set: {
+                    messages: [
+                      ...user.messages,
+                      { adData: adData, messages: [message], email: email },
+                    ],
+                  },
+                },
+                function (err) {
+                  if (!err) {
+                    console.log("Message Sent");
+                    return res.json({ success: true, message: "Message Sent" });
+                  } else {
+                    res.json({
+                      success: false,
+                      message: "Something went wrong",
+                    });
+                    return;
+                  }
+                }
+              );
+            }
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        // res.json({ success: true, message: "Message Sent to Ad Holder" });
         return;
       }
     });
