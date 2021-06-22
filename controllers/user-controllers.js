@@ -411,6 +411,7 @@ const login = async (req, res, next) => {
       email: existingUser.email,
       access_token: access_token,
       phone: existingUser.phone,
+      success: true,
       emailVerified: existingUser.emailVerified,
       phoneVerified: existingUser.phoneVerified,
       favourites: existingUser.favourites,
