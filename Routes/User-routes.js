@@ -5,6 +5,9 @@ const usersController = require("../controllers/user-controllers");
 const router = express.Router();
 
 router.get("/", usersController.getUsers);
+router.post("/deleteusers", usersController.deleteUsers);
+router.post("/blockusers", usersController.blockUsers);
+router.post("/editusers", usersController.editUsers);
 
 router.post("/register", usersController.signup);
 router.post("/register/emailverify", usersController.emailverify);

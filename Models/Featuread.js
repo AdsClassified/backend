@@ -3,12 +3,9 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const adSchema = new Schema({
+const featureAdSchema = new Schema({
   title: { type: String, required: true },
   category: { type: String, required: true },
-  categoryName: { type: String, required: true },
-  subCategory: { type: String, required: true },
-  subCategoryName: { type: String, required: true },
   description: { type: String, required: true },
   price: { type: String, required: true },
   location: { type: Object },
@@ -28,13 +25,12 @@ const adSchema = new Schema({
   active: { type: Boolean, default: false },
   approved: { type: Boolean, default: false },
   rejected: { type: Boolean, default: false },
-  reviewed: { type: Boolean, default: false },
+  reviewed: { type: Boolean, required: true },
   sold: { type: Boolean, default: false },
   featureAd: { type: Boolean, default: false },
   featureAdRequest: { type: Boolean, default: false },
-  featureAdReviewed: { type: Boolean, default: false },
 });
 
 // userSchema.plugin(uniqueValidator);
 
-module.exports = mongoose.model("Ad", adSchema);
+module.exports = mongoose.model("Featuread", featureAdSchema);

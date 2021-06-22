@@ -193,53 +193,57 @@ const signup = async (req, res, next) => {
     });
 
     try {
-      createdUser.save();
+      createdUser.save((err) => {
+        if (err) {
+          res.json({
+            success: false,
+            data: err,
+            message: "Signing up failed, please try again later.",
+          });
+          return;
+        } else {
+          let access_token;
+
+          try {
+            access_token = jwt.sign(
+              { userId: createdUser.id, email: createdUser.email },
+              "myprivatekey",
+              { expiresIn: "1h" }
+            );
+          } catch (err) {
+            res.json({
+              success: false,
+              data: err,
+              message: "Signing up failed, please try again later.",
+            });
+            return;
+          }
+          console.log({ message: "user created", createdUser });
+
+          sendEmailOtp(email, otpEmail);
+          sendPhoneOtp(phone, otpPhone);
+
+          res.status(200).send({
+            message: "Welcome to VINTED.CI",
+
+            username: createdUser.username,
+            email: createdUser.email,
+            access_token: access_token,
+            id: createdUser._id,
+            phone: createdUser.phone,
+            success: true,
+            emailVerified: createdUser.emailVerified,
+            phoneVerified: createdUser.phoneVerified,
+          });
+        }
+      });
     } catch (err) {
-      // res.status(500).json({
-      //   message: "Signing up failed, please try again later.",
-      //   error: "500",
-      // });
-      // return;
       res.json({
         success: false,
         data: err,
         message: "Signing up failed, please try again later.",
       });
     }
-
-    let access_token;
-
-    try {
-      access_token = jwt.sign(
-        { userId: createdUser.id, email: createdUser.email },
-        "myprivatekey",
-        { expiresIn: "1h" }
-      );
-    } catch (err) {
-      res.json({
-        success: false,
-        data: err,
-        message: "Signing up failed, please try again later.",
-      });
-      return;
-    }
-    console.log({ message: "user created", createdUser });
-
-    sendEmailOtp(email, otpEmail);
-    sendPhoneOtp(phone, otpPhone);
-
-    res.status(200).send({
-      message: "Welcome to VINTED.CI",
-
-      username: createdUser.username,
-      email: createdUser.email,
-      access_token: access_token,
-      id: createdUser._id,
-      phone: createdUser.phone,
-      success: true,
-      emailVerified: createdUser.emailVerified,
-      phoneVerified: createdUser.phoneVerified,
-    });
   } else {
     res.json({ message: "Please Enter all the Details", success: false });
   }
@@ -724,73 +728,143 @@ const getSearchActivity = async (req, res) => {
 const fbLogin = async (req, res) => {
   // console.log(req.body);
 
-  const { name, email, id, accessToken, picture } = req.body;
-  console.log(email);
+  const { name, email, id, accessToken, picture, mobile } = req.body;
+  console.log(email, name, email, id, accessToken, picture, mobile);
+
+  if (email && accessToken) {
+    try {
+      console.log("finding user");
+      let user = await User.findOne({ email: email });
+
+      if (user) {
+        console.log("user found");
+        res.json({
+          username: user.username,
+          email: user.email,
+          access_token: accessToken,
+          id: user._id,
+          phone: user.phone,
+          success: true,
+          emailVerified: user.emailVerified,
+          phoneVerified: user.phoneVerified,
+          favourites: user.favourites,
+          profileImage: user.profileImage,
+          success: true,
+          message: "Logedin SuccessFully",
+        });
+      } else {
+        console.log("IN ELSEEEEEEEEEE");
+        const createdUser = new User({
+          username: name,
+          email: email,
+          password: "signedupwithfb",
+          emailVerified: true,
+          phoneVerified: true,
+          otpEmail: 1234,
+          otpPhone: 1234,
+          profileImage: picture.data.url,
+          phone: "",
+        });
+
+        try {
+          console.log("Creating user");
+          await createdUser.save((err) => {
+            if (err) {
+              res.json({
+                success: false,
+                data: err,
+                message: "Signing up failed, please try again later.",
+              });
+            } else {
+              res.send({
+                message: "Welcome to VINTED.CI",
+
+                username: createdUser.username,
+                email: createdUser.email,
+                access_token: accessToken,
+                id: createdUser._id,
+                phone: createdUser.phone,
+                success: true,
+                emailVerified: createdUser.emailVerified,
+                phoneVerified: createdUser.phoneVerified,
+              });
+            }
+          });
+        } catch (err) {
+          console.log(err, "In ERORRRRRRRRRRRRRRRRRRRRRR");
+          res.json({
+            success: false,
+            data: err,
+            message: "Signing up failed, please try again later.",
+          });
+          return;
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  } else {
+    console.log("Login failed");
+    res.json({ success: false, message: "Login Failed" });
+  }
+};
+
+const deleteUsers = async (req, res) => {
+  console.log(req.body);
+
+  const { ids } = req.body;
+
+  console.log(ids);
 
   try {
-    console.log("finding user");
-    let user = await User.findOne({ email: email });
+    let user = await User.deleteMany({ _id: ids });
+    res.json({ success: true, message: "Users deleted" });
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false, message: "Deleteing Failed" });
+    return;
+  }
+};
 
-    if (user) {
-      console.log("user found");
-      res.json({
-        username: user.username,
-        email: user.email,
-        access_token: accessToken,
-        id: user._id,
-        phone: user.phone,
-        success: true,
-        emailVerified: user.emailVerified,
-        phoneVerified: user.phoneVerified,
-        favourites: user.favourites,
-        profileImage: user.profileImage,
-        success: true,
-        message: "Logedin SuccessFully",
-      });
-    } else {
-      const createdUser = new User({
-        username: name,
-        email: email,
-        password: "signedupwithfb",
-        emailVerified: true,
-        phoneVerified: true,
-        otpEmail: 1234,
-        otpPhone: 1234,
-        profileImage: picture.data.url,
-      });
+const blockUsers = async (req, res) => {
+  console.log(req.body);
 
-      try {
-        createdUser.save();
-      } catch (err) {
-        // res.status(500).json({
-        //   message: "Signing up failed, please try again later.",
-        //   error: "500",
-        // });
-        // return;
+  const { ids } = req.body;
+
+  console.log(ids);
+
+  try {
+    let user = await User.updateMany({ _id: ids }, { block: true });
+    console.log(user);
+    res.json({ success: true, message: "Users Blocked" });
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false, message: "blocking Failed" });
+    return;
+  }
+};
+
+const editUsers = (req, res) => {
+  console.log(req.body);
+
+  const { username, emailVerified, phoneVerified, userId } = req.body;
+
+  User.update(
+    { _id: userId },
+    { $set: { username, emailVerified, phoneVerified } },
+    function (err) {
+      if (!err) {
+        console.log("User Updated");
+        return res.json({ success: true, message: "User Updated" });
+      } else {
         res.json({
           success: false,
-          data: err,
-          message: "Signing up failed, please try again later.",
+          message: "Something went wrong",
         });
         return;
       }
-
-      res.send({
-        message: "Welcome to VINTED.CI",
-
-        username: createdUser.username,
-        email: createdUser.email,
-        access_token: accessToken,
-        id: createdUser._id,
-        phone: createdUser.phone,
-        success: true,
-        emailVerified: createdUser.emailVerified,
-        phoneVerified: createdUser.phoneVerified,
-      });
     }
-  } catch (err) {
-    console.log(err);
-  }
+  );
 };
 
 module.exports = {
@@ -807,4 +881,7 @@ module.exports = {
   updateImage,
   getSearchActivity,
   fbLogin,
+  deleteUsers,
+  editUsers,
+  blockUsers,
 };

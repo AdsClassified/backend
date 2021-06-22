@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 
 const usersRoutes = require("./Routes/User-routes");
 const adRoutes = require("./Routes/Ad-routes");
+const categoryRoutes = require("./Routes/Category-routes");
 
 const PORT = process.env.PORT || 3001;
 
@@ -84,6 +85,7 @@ app.use((req, res, next) => {
 // });
 app.use("/api/users", usersRoutes);
 app.use("/api/placead", adRoutes);
+app.use("/api/categories", categoryRoutes);
 // app.post("/api/users", (req, res) => {
 //   console.log(req.body);
 // });
