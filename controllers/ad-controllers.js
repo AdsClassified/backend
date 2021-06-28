@@ -102,6 +102,29 @@ const getFeatureAdsRequests = async (req, res) => {
   }
 };
 
+const getAdsApproval = async (req, res) => {
+  console.log("yooo");
+  let ads;
+  try {
+    ads = await Ad.find({ reviewed: false });
+    let reverse = ads.map((item) => item).reverse();
+    res.json({
+      success: true,
+      message: "Ads found",
+      ads: reverse,
+    });
+    return;
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      data: err,
+      message: "Error fectching Ads",
+    });
+    return;
+  }
+};
+
 const countFeatureAdsRequests = async (req, res) => {
   console.log("hello g");
   let ads;
@@ -141,6 +164,27 @@ const getFeatureAds = async (req, res) => {
     });
     return;
   }
+};
+
+const getFeatureAd = async (req, res, next) => {
+  console.log(req.body, "in getFeatureAd");
+  let ad;
+  try {
+    ad = await Featuread.find({ _id: req.body.id });
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      data: err,
+      message: "Error fectching Ads",
+    });
+    return;
+  }
+  res.json({
+    success: true,
+    message: "Ad found",
+    ad: ad,
+  });
 };
 
 const countFeatureAds = async (req, res) => {
@@ -884,7 +928,7 @@ const search = async (req, res) => {
 const sendMessage = async (req, res) => {
   // console.log(req.body);
   const { phone, message, email, adData, userId } = req.body;
-  console.log(phone, message, email, userId);
+  // console.log(phone, message, email, userId, adData.title);
 
   if ((message && email, userId)) {
     const output = `
@@ -954,12 +998,13 @@ const sendMessage = async (req, res) => {
               existMsgs.map((msg) => {
                 console.log(msg.messages, "inside loop");
                 if (msg.email === email) {
+                  msg.adData = adData;
                   msg.messages.push(message);
                   return;
                 }
               });
 
-              console.log(existMsgs[0].messages, "After");
+              console.log(existMsgs[0].adData.title, "After");
 
               User.update(
                 { _id: userId },
@@ -1204,4 +1249,6 @@ module.exports = {
   featureAdRequest,
   soldAd,
   deleteFeatureAds,
+  getFeatureAd,
+  getAdsApproval,
 };

@@ -38,8 +38,10 @@ router.post("/deactiveads", adController.deActiveAds);
 router.post("/sendemail", adController.sendEmail);
 
 router.get("/getfeatureads", adController.getFeatureAds);
+router.post("/getfeaturead", adController.getFeatureAd);
 router.get("/countfeatureads", adController.countFeatureAds);
 router.get("/getfeatureadsrequests", adController.getFeatureAdsRequests);
+router.get("/getadsapproval", adController.getAdsApproval);
 router.get("/countfeatureadsrequests", adController.countFeatureAdsRequests);
 router.post("/makefeaturead", adController.makeFeatureAd);
 router.post("/removefeaturead", adController.removeFeatureAd);
