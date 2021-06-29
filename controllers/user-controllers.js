@@ -26,6 +26,25 @@ const getUsers = async (req, res, next) => {
   res.json({ users: users });
 };
 
+const getUserImage = async (req, res, next) => {
+  console.log(req.body);
+  let user;
+  try {
+    user = await User.findOne({ _id: req.body.id }, "-password");
+    if (user.profileImage) {
+      res.json({ image: user.profileImage });
+    }
+
+    // console.log(user.profileImage);
+  } catch (err) {
+    const error = new HttpError(
+      "Fetching user failed, please try again later.",
+      500
+    );
+    return next(error);
+  }
+};
+
 const sendEmailOtp = (email, otp) => {
   console.log(email, otp);
   if (otp && email) {
@@ -726,6 +745,85 @@ const getSearchActivity = async (req, res) => {
   }
 };
 
+const deleteSearchActivity = async (req, res) => {
+  console.log(req.body, "i am body");
+
+  const { title, userId } = req.body;
+
+  if (title && userId) {
+    try {
+      await User.findOne({ _id: userId }, (err, user) => {
+        if (err) {
+          console.log(err, "i am error");
+        } else {
+          console.log(user.searchActivity);
+          // console.log("hello");
+          let newSearchActivity = user.searchActivity.filter((search) => {
+            return search.searchValue !== title;
+          });
+          console.log(newSearchActivity);
+          User.update(
+            { _id: userId },
+            { $set: { searchActivity: newSearchActivity } },
+            function (err) {
+              if (!err) {
+                console.log("User Updated");
+                return res.json({ success: true, message: "Activity Deleted" });
+              } else {
+                res.json({
+                  success: false,
+                  message: "Something went wrong",
+                });
+                return;
+              }
+            }
+          );
+        }
+      });
+    } catch (err) {
+      console.log(err, "in error catch");
+    }
+  } else if (title === undefined || title === "" || title === null) {
+    console.log("in else if");
+    try {
+      await User.findOne({ _id: userId }, (err, user) => {
+        if (err) {
+          console.log(err, "i am error");
+        } else {
+          console.log(user.searchActivity);
+          // console.log("hello");
+          let newSearchActivity = user.searchActivity.filter((search) => {
+            return (
+              search.searchValue !== undefined &&
+              search.searchValue !== "" &&
+              search.searchValue !== null
+            );
+          });
+          console.log(newSearchActivity);
+          User.update(
+            { _id: userId },
+            { $set: { searchActivity: newSearchActivity } },
+            function (err) {
+              if (!err) {
+                console.log("User Updated");
+                return res.json({ success: true, message: "Activity Deleted" });
+              } else {
+                res.json({
+                  success: false,
+                  message: "Something went wrong",
+                });
+                return;
+              }
+            }
+          );
+        }
+      });
+    } catch (err) {
+      console.log(err, "in error catch");
+    }
+  }
+};
+
 const fbLogin = async (req, res) => {
   // console.log(req.body);
 
@@ -885,4 +983,6 @@ module.exports = {
   deleteUsers,
   editUsers,
   blockUsers,
+  deleteSearchActivity,
+  getUserImage,
 };

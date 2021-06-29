@@ -898,7 +898,29 @@ const search = async (req, res) => {
         // console.log(user);
         User.update(
           { _id: userId },
-          { $set: { searchActivity: [...user.searchActivity, searchValue] } },
+          {
+            $set: {
+              searchActivity: [
+                ...user.searchActivity,
+                {
+                  searchValue,
+                  category: category.category ? category.category._id : "",
+                  categoryName: category.category
+                    ? category.category.title
+                    : "",
+                  subCategory: category.subCategory
+                    ? category.subCategory.id
+                    : "",
+                  subTitle: category.subCategory
+                    ? category.subCategory.subTitle
+                    : "",
+                  date: Date.now(),
+                  negotiable: negotiable,
+                  location: location.address,
+                },
+              ],
+            },
+          },
           function (err) {
             if (!err) {
               console.log("user added");

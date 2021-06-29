@@ -20,6 +20,7 @@ router.post("/fblogin", usersController.fbLogin);
 
 router.post("/updateusername", usersController.updateUserUsername);
 router.post("/updateimage", usersController.updateImage);
+router.post("/getuserimage", usersController.getUserImage);
 router.post("/updatepassword", usersController.updateUserPassword);
 router.post("/savefavourite", usersController.saveFavourite);
 router.post("/deletefavourite", usersController.deleteFavourite);
@@ -27,5 +28,6 @@ router.post("/deletefavourite", usersController.deleteFavourite);
 router.post("/getmessages", usersController.getMessages);
 
 router.post("/searchactivity", usersController.getSearchActivity);
+router.post("/deletesearchactivity", usersController.deleteSearchActivity);
 
 module.exports = router;
