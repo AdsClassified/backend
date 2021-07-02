@@ -21,6 +21,7 @@ router.post("/fblogin", usersController.fbLogin);
 router.post("/updateusername", usersController.updateUserUsername);
 router.post("/updateimage", usersController.updateImage);
 router.post("/getuserimage", usersController.getUserImage);
+router.post("/updateuserlocation", usersController.updateUserLocation);
 router.post("/updatepassword", usersController.updateUserPassword);
 router.post("/savefavourite", usersController.saveFavourite);
 router.post("/deletefavourite", usersController.deleteFavourite);

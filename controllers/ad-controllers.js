@@ -409,6 +409,7 @@ const placeAd = async (req, res) => {
     hideNumber,
     reviewed,
     user,
+    featureAdRequest,
   } = req.body;
 
   const createdAd = new Ad({
@@ -426,6 +427,7 @@ const placeAd = async (req, res) => {
     hideNumber,
     reviewed,
     user,
+    featureAdRequest,
   });
   try {
     createdAd.save((err) => {

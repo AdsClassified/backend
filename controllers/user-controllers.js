@@ -361,6 +361,7 @@ const login = async (req, res, next) => {
       phoneVerified: existingUser.phoneVerified,
       favourites: existingUser.favourites,
       profileImage: existingUser.profileImage,
+      location: existingUser.location,
     });
   } else {
     try {
@@ -435,6 +436,7 @@ const login = async (req, res, next) => {
       phoneVerified: existingUser.phoneVerified,
       favourites: existingUser.favourites,
       profileImage: existingUser.profileImage,
+      location: existingUser.location,
     });
   }
 };
@@ -722,6 +724,26 @@ const updateImage = (req, res) => {
   );
 };
 
+const updateUserLocation = (req, res) => {
+  console.log(req.body);
+
+  const { id, location } = req.body;
+  console.log(id);
+
+  User.update({ _id: id }, { $set: { location: location } }, function (err) {
+    if (!err) {
+      console.log("Location Pic Updated");
+      return res.json({ success: true, message: "Location  Updated" });
+    } else {
+      res.json({
+        success: false,
+        message: "Something went wrong",
+      });
+      return;
+    }
+  });
+};
+
 const getSearchActivity = async (req, res) => {
   console.log(req.body);
 
@@ -850,6 +872,7 @@ const fbLogin = async (req, res) => {
           profileImage: user.profileImage,
           success: true,
           message: "Logedin SuccessFully",
+          location: user.location,
         });
       } else {
         console.log("IN ELSEEEEEEEEEE");
@@ -886,6 +909,7 @@ const fbLogin = async (req, res) => {
                 success: true,
                 emailVerified: createdUser.emailVerified,
                 phoneVerified: createdUser.phoneVerified,
+                location: createdUser.location,
               });
             }
           });
@@ -985,4 +1009,5 @@ module.exports = {
   blockUsers,
   deleteSearchActivity,
   getUserImage,
+  updateUserLocation,
 };

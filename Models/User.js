@@ -17,6 +17,7 @@ const userSchema = new Schema({
   messages: { type: Array },
   profileImage: { type: String },
   block: { type: Boolean, default: false },
+  location: { type: Object },
 });
 
 // userSchema.plugin(uniqueValidator);
