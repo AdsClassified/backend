@@ -949,6 +949,41 @@ const search = async (req, res) => {
   }
 };
 
+const getAdsByLocation = async (req, res) => {
+  console.log(req.body);
+
+  const location = req.body;
+  try {
+    yoo = await Ad.find({
+      active: true,
+    });
+
+    console.log(yoo.length);
+
+    yoo = yoo.filter((ad) => {
+      if (typeof ad.location === "object") {
+        return (
+          ad.location.mapPosition.lat === location.lat &&
+          ad.location.mapPosition.lng === location.lng
+        );
+      }
+    });
+    console.log(yoo.length);
+
+    res.json({
+      ads: yoo,
+      success: true,
+      message: "Ads Found",
+    });
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      message: "No Ad Found",
+    });
+  }
+};
+
 const sendMessage = async (req, res) => {
   // console.log(req.body);
   const { phone, message, email, adData, userId } = req.body;
@@ -1275,4 +1310,5 @@ module.exports = {
   deleteFeatureAds,
   getFeatureAd,
   getAdsApproval,
+  getAdsByLocation,
 };

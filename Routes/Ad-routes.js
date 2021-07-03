@@ -21,6 +21,7 @@ router.post("/featureadrequest", adController.featureAdRequest);
 router.post("/soldad", adController.soldAd);
 router.post("/editad", adController.editAd);
 router.post("/getfavourites", adController.getFavourites);
+router.post("/getadsbylocation", adController.getAdsByLocation);
 
 //Search
 router.post("/search", adController.search);
