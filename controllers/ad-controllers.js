@@ -26,7 +26,7 @@ const getActiveAds = async (req, res, next) => {
   console.log("hello g from active ads");
   let ads;
   try {
-    ads = await Ad.find({ active: true });
+    ads = await Ad.find({ active: true, sold: false });
   } catch (err) {
     console.log(err);
     res.json({
@@ -147,7 +147,7 @@ const getFeatureAds = async (req, res) => {
   console.log("yooo");
   let ads;
   try {
-    ads = await Featuread.find({});
+    ads = await Featuread.find({ sold: false });
     let reverse = ads.map((item) => item).reverse();
     res.json({
       success: true,
@@ -304,6 +304,12 @@ const makeFeatureAd = async (req, res) => {
                 }
               }
             );
+
+            emailSender(
+              contactDetails.email,
+              "Your Ad Update",
+              "Your Ad Got Featured"
+            );
           } catch (err) {
             res.json({
               success: false,
@@ -334,6 +340,11 @@ const makeFeatureAd = async (req, res) => {
               success: true,
               message: `Ad is rejected`,
             });
+            emailSender(
+              contactDetails.email,
+              "Your Ad Update",
+              "Your Feature Ad Got Rejected"
+            );
             return;
           } else {
             res.json({
@@ -356,7 +367,7 @@ const makeFeatureAd = async (req, res) => {
 const removeFeatureAd = async (req, res) => {
   console.log(req.body);
 
-  const { id } = req.body;
+  const { id, email } = req.body;
 
   try {
     await Featuread.remove({ _id: id });
@@ -367,6 +378,8 @@ const removeFeatureAd = async (req, res) => {
         function (err) {
           if (!err) {
             console.log("ad updated");
+
+            emailSender(email, "Your Ad Update", "Your Feature Ad Got Removed");
             res.json({
               message: "Removed from features",
               success: true,
@@ -525,13 +538,17 @@ const deleteAd = async (req, res) => {
 
 const deleteAds = async (req, res) => {
   console.log(req.body);
-  const { ids } = req.body;
+  const { ids, emails } = req.body;
 
   console.log(ids);
 
   try {
     let ad = await Ad.deleteMany({ _id: ids });
     res.json({ success: true, message: "Ads deleted" });
+    emails.map((email) => {
+      response = emailSender(email, "Your Ad Update", "Your Ad Got Deleted");
+      console.log(response);
+    });
   } catch (err) {
     console.log(err);
     res.json({ success: false, message: "Deleteing Failed" });
@@ -541,13 +558,21 @@ const deleteAds = async (req, res) => {
 
 const deleteFeatureAds = async (req, res) => {
   console.log(req.body);
-  const { ids } = req.body;
+  const { ids, emails } = req.body;
 
   console.log(ids);
 
   try {
     let ad = await Featuread.deleteMany({ _id: ids });
     res.json({ success: true, message: "Ads deleted" });
+    emails.map((email) => {
+      response = emailSender(
+        email,
+        "Your Ad Update",
+        "Your Feature Ad Got Deleted"
+      );
+      console.log(response);
+    });
   } catch (err) {
     console.log(err);
     res.json({ success: false, message: "Deleteing Failed" });
@@ -618,18 +643,14 @@ const soldAd = async (req, res) => {
   let ad;
 
   try {
-    Ad.update(
-      { _id: id },
-      { $set: { featureAdRequest: true } },
-      function (err) {
-        if (!err) {
-          return res.json({
-            success: true,
-            message: `Ad is ${checked ? "Sold" : "Un Requested"}`,
-          });
-        }
+    Ad.update({ _id: id }, { $set: { sold: true } }, function (err) {
+      if (!err) {
+        return res.json({
+          success: true,
+          message: `Ad is ${checked ? "Sold" : "Un Requested"}`,
+        });
       }
-    );
+    });
   } catch (err) {
     console.log(err, "hello");
     res.json({
@@ -984,6 +1005,32 @@ const getAdsByLocation = async (req, res) => {
   }
 };
 
+const getAdsByCategories = async (req, res) => {
+  console.log(req.body);
+  const { id } = req.body;
+
+  try {
+    yoo = await Ad.find({
+      category: id,
+      active: true,
+    });
+
+    console.log(yoo.length);
+
+    res.json({
+      ads: yoo,
+      success: true,
+      message: "Ads Found",
+    });
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      message: "No Ad Found",
+    });
+  }
+};
+
 const sendMessage = async (req, res) => {
   // console.log(req.body);
   const { phone, message, email, adData, userId } = req.body;
@@ -1126,108 +1173,8 @@ const sendMessage = async (req, res) => {
   }
 };
 
-const rejectAds = async (req, res) => {
-  console.log(req.body);
-  const { ids } = req.body;
-
-  console.log(ids);
-
-  try {
-    let ad = await Ad.updateMany(
-      { _id: ids },
-
-      {
-        $set: {
-          reviewed: true,
-          active: false,
-          rejected: true,
-          approved: false,
-        },
-      }
-    );
-    console.log(ad);
-    res.json({ success: true, message: "Ad Rejected" });
-  } catch (err) {
-    console.log(err);
-    res.json({ success: false, message: "Somthing Went Wrong" });
-    return;
-  }
-};
-
-const approveAds = async (req, res) => {
-  console.log(req.body);
-  const { ids } = req.body;
-
-  console.log(ids);
-
-  try {
-    let ad = await Ad.updateMany(
-      { _id: ids },
-
-      {
-        $set: { reviewed: true, active: true, rejected: false, approved: true },
-      }
-    );
-    console.log(ad);
-    res.json({ success: true, message: "Ad Approved and Active" });
-  } catch (err) {
-    console.log(err);
-    res.json({ success: false, message: "Somthing Went Wrong" });
-    return;
-  }
-};
-
-const activeAds = async (req, res) => {
-  console.log(req.body);
-  const { id } = req.body;
-
-  console.log(id);
-
-  try {
-    let ad = await Ad.update(
-      { _id: id },
-
-      {
-        $set: { active: true },
-      }
-    );
-    console.log(ad);
-    res.json({ success: true, message: "Ad is Active" });
-  } catch (err) {
-    console.log(err);
-    res.json({ success: false, message: "Somthing Went Wrong" });
-    return;
-  }
-};
-
-const deActiveAds = async (req, res) => {
-  console.log(req.body);
-  const { id } = req.body;
-
-  console.log(id);
-
-  try {
-    let ad = await Ad.update(
-      { _id: id },
-
-      {
-        $set: { active: false },
-      }
-    );
-    console.log(ad);
-    res.json({ success: true, message: "Ad is De Active" });
-  } catch (err) {
-    console.log(err);
-    res.json({ success: false, message: "Somthing Went Wrong" });
-    return;
-  }
-};
-
-const sendEmail = async (req, res) => {
-  console.log(req.body);
-
-  const { email, subject, description } = req.body;
-
+const emailSender = async (email, subject, description) => {
+  console.log(email, subject, description);
   if (email) {
     const output = `
             
@@ -1269,7 +1216,183 @@ const sendEmail = async (req, res) => {
         //   otp,
         // });
         // await emailOtp.save();
-        res.json({ message: "Check Your Email", success: true });
+        // res.json({ message: "Check Your Email", success: true });
+        // return true;
+      }
+      return true;
+    });
+  } else {
+    // res.json({ message: "Something went Wrong", message: false });
+    return false;
+  }
+};
+
+const rejectAds = async (req, res) => {
+  console.log(req.body);
+  const { ids, emails } = req.body;
+
+  console.log(ids, emails);
+
+  try {
+    let ad = await Ad.updateMany(
+      { _id: ids },
+
+      {
+        $set: {
+          reviewed: true,
+          active: false,
+          rejected: true,
+          approved: false,
+        },
+      }
+    );
+    console.log(ad);
+    res.json({ success: true, message: "Ad Rejected" });
+    let response;
+    emails.map((email) => {
+      response = emailSender(email, "Your Ad Update", "Your Ad Got Rejected");
+      console.log(response);
+    });
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false, message: "Somthing Went Wrong" });
+    return;
+  }
+};
+
+const approveAds = async (req, res) => {
+  console.log(req.body);
+  const { ids, emails } = req.body;
+
+  console.log(ids);
+
+  try {
+    let ad = await Ad.updateMany(
+      { _id: ids },
+
+      {
+        $set: { reviewed: true, active: true, rejected: false, approved: true },
+      }
+    );
+    console.log(ad);
+    res.json({ success: true, message: "Ad Approved and Active" });
+    emails.map((email) => {
+      response = emailSender(email, "Your Ad Update", "Your Ad Got Approved");
+      console.log(response);
+    });
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false, message: "Somthing Went Wrong" });
+    return;
+  }
+};
+
+const activeAds = async (req, res) => {
+  console.log(req.body);
+  const { id, emails } = req.body;
+
+  console.log(id);
+
+  try {
+    let ad = await Ad.update(
+      { _id: id },
+
+      {
+        $set: { active: true },
+      }
+    );
+    console.log(ad);
+    res.json({ success: true, message: "Ad is Active" });
+    emails.map((email) => {
+      response = emailSender(email, "Your Ad Update", "Your Ad Got Activated");
+      console.log(response);
+    });
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false, message: "Somthing Went Wrong" });
+    return;
+  }
+};
+
+const deActiveAds = async (req, res) => {
+  console.log(req.body);
+  const { id, emails } = req.body;
+
+  console.log(id);
+
+  try {
+    let ad = await Ad.update(
+      { _id: id },
+
+      {
+        $set: { active: false },
+      }
+    );
+    console.log(ad);
+    res.json({ success: true, message: "Ad is De Active" });
+
+    emails.map((email) => {
+      response = emailSender(
+        email,
+        "Your Ad Update",
+        "Your Ad Got Deactivated"
+      );
+      console.log(response);
+    });
+  } catch (err) {
+    console.log(err);
+    res.json({ success: false, message: "Somthing Went Wrong" });
+    return;
+  }
+};
+
+const sendEmail = async (req, res) => {
+  console.log(req.body);
+
+  const { email, subject, description } = req.body;
+
+  if (email) {
+    const output = `
+
+            <p>${description}</p>
+            `;
+
+    // create reusable transporter object using the default SMTP transport
+    let transporter = nodemailer.createTransport({
+      host: "smtp.google.com",
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      requireTLS: true,
+      service: "gmail",
+      auth: {
+        user: "queryaidataron@gmail.com", // generated ethereal user
+        pass: "nwnxovucjfoqqwww", // generated ethereal password
+      },
+    });
+
+    // setup email data with unicode symbols
+    let mailOptions = {
+      from: '"Vinted.CI" <queryaidataron@gmail.com>', // sender address
+      to: email, // list of receivers
+      subject: subject, // Subject line
+      // text: details, // plain text body
+      html: output, // html body
+    };
+
+    // send mail with defined transport object
+    transporter.sendMail(mailOptions, async (error, info) => {
+      if (error) {
+        return error;
+      } else {
+        console.log("Message sent: %s", info.messageId);
+        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+
+        // let emailOtp = new Emailotp({
+        //   email,
+        //   otp,
+        // });
+        // await emailOtp.save();
+        res.json({ message: "Email Sent", success: true });
         // return true;
       }
     });
@@ -1311,4 +1434,5 @@ module.exports = {
   getFeatureAd,
   getAdsApproval,
   getAdsByLocation,
+  getAdsByCategories,
 };

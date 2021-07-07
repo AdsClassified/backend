@@ -22,6 +22,7 @@ router.post("/soldad", adController.soldAd);
 router.post("/editad", adController.editAd);
 router.post("/getfavourites", adController.getFavourites);
 router.post("/getadsbylocation", adController.getAdsByLocation);
+router.post("/getadsbycategories", adController.getAdsByCategories);
 
 //Search
 router.post("/search", adController.search);
@@ -37,6 +38,7 @@ router.post("/activeads", adController.activeAds);
 router.post("/deactiveads", adController.deActiveAds);
 
 router.post("/sendemail", adController.sendEmail);
+router.post("/sendemailMulti", adController.sendEmail);
 
 router.get("/getfeatureads", adController.getFeatureAds);
 router.post("/getfeaturead", adController.getFeatureAd);
