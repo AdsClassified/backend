@@ -348,6 +348,8 @@ const login = async (req, res, next) => {
       });
     }
 
+    // console.log(existingUser.notify);
+
     res.json({
       message: "you are login success fully ",
       username: existingUser.username,
@@ -362,6 +364,7 @@ const login = async (req, res, next) => {
       favourites: existingUser.favourites,
       profileImage: existingUser.profileImage,
       location: existingUser.location,
+      notify: existingUser.notify,
     });
   } else {
     try {
@@ -437,6 +440,7 @@ const login = async (req, res, next) => {
       favourites: existingUser.favourites,
       profileImage: existingUser.profileImage,
       location: existingUser.location,
+      notify: existingUser.notify,
     });
   }
 };

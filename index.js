@@ -5,6 +5,9 @@ const bodyParser = require("body-parser");
 const usersRoutes = require("./Routes/User-routes");
 const adRoutes = require("./Routes/Ad-routes");
 const categoryRoutes = require("./Routes/Category-routes");
+const popupRoutes = require("./Routes/Popup-routes");
+const conversationRoutes = require("./Routes/Conversation-routes");
+const messagesRoutes = require("./Routes/Messages-routes");
 
 const PORT = process.env.PORT || 3001;
 
@@ -86,6 +89,9 @@ app.use((req, res, next) => {
 app.use("/api/users", usersRoutes);
 app.use("/api/placead", adRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/popup", popupRoutes);
+app.use("/api/conversation", conversationRoutes);
+app.use("/api/messages", messagesRoutes);
 // app.post("/api/users", (req, res) => {
 //   console.log(req.body);
 // });

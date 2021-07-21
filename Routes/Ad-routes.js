@@ -5,6 +5,7 @@ const adController = require("../controllers/ad-controllers");
 const router = express.Router();
 
 router.get("/getads", adController.getAds);
+router.post("/getimages", adController.getImages);
 router.get("/getactiveads", adController.getActiveAds);
 router.get("/countads", adController.countAds);
 router.get("/adsstats", adController.adsStats);
@@ -41,9 +42,11 @@ router.post("/sendemail", adController.sendEmail);
 router.post("/sendemailMulti", adController.sendEmail);
 
 router.get("/getfeatureads", adController.getFeatureAds);
+router.post("/getfeatureimages", adController.getFeatureImages);
 router.post("/getfeaturead", adController.getFeatureAd);
 router.get("/countfeatureads", adController.countFeatureAds);
 router.get("/getfeatureadsrequests", adController.getFeatureAdsRequests);
+router.post("/getfeaturerequestsimages", adController.getFeatureRequestsImages);
 router.get("/getadsapproval", adController.getAdsApproval);
 router.get("/countfeatureadsrequests", adController.countFeatureAdsRequests);
 router.post("/makefeaturead", adController.makeFeatureAd);

@@ -8,7 +8,7 @@ const getAds = async (req, res, next) => {
   console.log("hello g");
   let ads;
   try {
-    ads = await Ad.find({});
+    ads = await Ad.find({}, "-images");
   } catch (err) {
     console.log(err);
     res.json({
@@ -20,6 +20,24 @@ const getAds = async (req, res, next) => {
   }
   let reverse = ads.map((item) => item).reverse();
   res.json({ ads: reverse });
+};
+
+const getImages = async (req, res) => {
+  console.log("hello g images");
+  const { adId } = req.body;
+  let images;
+  try {
+    images = await Ad.find({ _id: adId }, "images");
+    res.json({ images: images });
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      data: err,
+      message: "Error fectching images",
+    });
+    return;
+  }
 };
 
 const getActiveAds = async (req, res, next) => {
@@ -83,7 +101,7 @@ const getFeatureAdsRequests = async (req, res) => {
   console.log("yooo");
   let ads;
   try {
-    ads = await Ad.find({ featureAdRequest: true });
+    ads = await Ad.find({ featureAdRequest: true }, "-images");
     let reverse = ads.map((item) => item).reverse();
     res.json({
       success: true,
@@ -147,7 +165,7 @@ const getFeatureAds = async (req, res) => {
   console.log("yooo");
   let ads;
   try {
-    ads = await Featuread.find({ sold: false });
+    ads = await Featuread.find({ sold: false }, "-images");
     let reverse = ads.map((item) => item).reverse();
     res.json({
       success: true,
@@ -161,6 +179,42 @@ const getFeatureAds = async (req, res) => {
       success: false,
       data: err,
       message: "Error fectching Ads",
+    });
+    return;
+  }
+};
+
+const getFeatureImages = async (req, res) => {
+  console.log("hello g images");
+  const { adId } = req.body;
+  let images;
+  try {
+    images = await Featuread.find({ _id: adId }, "images");
+    res.json({ images: images });
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      data: err,
+      message: "Error fectching images",
+    });
+    return;
+  }
+};
+
+const getFeatureRequestsImages = async (req, res) => {
+  console.log("hello g images");
+  const { adId } = req.body;
+  let images;
+  try {
+    images = await Ad.find({ _id: adId }, "images");
+    res.json({ images: images });
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      data: err,
+      message: "Error fectching images",
     });
     return;
   }
@@ -1404,6 +1458,7 @@ const sendEmail = async (req, res) => {
 };
 module.exports = {
   getAds,
+  getImages,
   getActiveAds,
   placeAd,
   getUserAds,
@@ -1435,4 +1490,6 @@ module.exports = {
   getAdsApproval,
   getAdsByLocation,
   getAdsByCategories,
+  getFeatureImages,
+  getFeatureRequestsImages,
 };
