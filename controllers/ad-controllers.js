@@ -161,6 +161,29 @@ const countFeatureAdsRequests = async (req, res) => {
   res.json({ ads: ads });
 };
 
+const getActiveFeatureAds = async (req, res) => {
+  console.log("yooo");
+  let ads;
+  try {
+    ads = await Featuread.find({ sold: false });
+    let reverse = ads.map((item) => item).reverse();
+    res.json({
+      success: true,
+      message: "Ad found",
+      ads: reverse,
+    });
+    return;
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      data: err,
+      message: "Error fectching Ads",
+    });
+    return;
+  }
+};
+
 const getFeatureAds = async (req, res) => {
   console.log("yooo");
   let ads;
@@ -1486,6 +1509,7 @@ module.exports = {
   featureAdRequest,
   soldAd,
   deleteFeatureAds,
+  getActiveFeatureAds,
   getFeatureAd,
   getAdsApproval,
   getAdsByLocation,

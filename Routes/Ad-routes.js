@@ -44,6 +44,7 @@ router.post("/sendemailMulti", adController.sendEmail);
 router.get("/getfeatureads", adController.getFeatureAds);
 router.post("/getfeatureimages", adController.getFeatureImages);
 router.post("/getfeaturead", adController.getFeatureAd);
+router.get("/getactivefeatureads", adController.getActiveFeatureAds);
 router.get("/countfeatureads", adController.countFeatureAds);
 router.get("/getfeatureadsrequests", adController.getFeatureAdsRequests);
 router.post("/getfeaturerequestsimages", adController.getFeatureRequestsImages);
