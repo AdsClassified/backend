@@ -365,6 +365,7 @@ const login = async (req, res, next) => {
       profileImage: existingUser.profileImage,
       location: existingUser.location,
       notify: existingUser.notify,
+      popupView: existingUser.popupView,
     });
   } else {
     try {
@@ -424,7 +425,7 @@ const login = async (req, res, next) => {
       return next(error);
     }
 
-    console.log(existingUser.favourites);
+    console.log(existingUser.popupView);
 
     res.json({
       message: "you are login success fully ",
@@ -441,6 +442,7 @@ const login = async (req, res, next) => {
       profileImage: existingUser.profileImage,
       location: existingUser.location,
       notify: existingUser.notify,
+      popupView: existingUser.popupView,
     });
   }
 };

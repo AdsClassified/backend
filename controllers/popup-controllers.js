@@ -1,4 +1,5 @@
 const Popup = require("../Models/Popup");
+const User = require("../Models/User");
 
 const getPopup = async (req, res) => {
   console.log("hello");
@@ -18,7 +19,7 @@ const getPopup = async (req, res) => {
 };
 
 const addPopup = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   let { title, link, description, image } = req.body;
 
   const createdPopup = new Popup({
@@ -38,6 +39,11 @@ const addPopup = async (req, res) => {
         return;
       } else {
         res.json({ success: true, message: "Popup Created" });
+        User.update({}, { $set: { popupView: false } }, function (err) {
+          if (!err) {
+            console.log("Popup Sent to all");
+          }
+        });
         return;
       }
     });
@@ -52,7 +58,7 @@ const addPopup = async (req, res) => {
 };
 
 const deletePopup = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   const { ids } = req.body;
 
   console.log(ids);
@@ -68,7 +74,7 @@ const deletePopup = async (req, res) => {
 };
 
 const editPopup = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   let { title, link, id, description, image } = req.body;
 
@@ -99,6 +105,11 @@ const editPopup = async (req, res) => {
             success: true,
             message: "Popup Updated",
           });
+          User.update({}, { $set: { popupView: false } }, function (err) {
+            if (!err) {
+              console.log("Popup Sent to all");
+            }
+          });
           return;
         }
       }
@@ -115,9 +126,26 @@ const editPopup = async (req, res) => {
   }
 };
 
+const closePopup = async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    User.updateOne({ _id: id }, { $set: { popupView: true } }, function (err) {
+      if (!err) {
+        console.log("Popup Viewed");
+      } else {
+        console.log("Error with popup");
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 module.exports = {
   getPopup,
   addPopup,
   deletePopup,
   editPopup,
+  closePopup,
 };

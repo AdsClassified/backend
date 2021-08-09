@@ -5,6 +5,7 @@ const popupController = require("../controllers/popup-controllers");
 const router = express.Router();
 
 router.get("/", popupController.getPopup);
+router.post("/close", popupController.closePopup);
 router.post("/add", popupController.addPopup);
 router.post("/delete", popupController.deletePopup);
 router.post("/edit", popupController.editPopup);

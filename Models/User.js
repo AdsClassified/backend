@@ -19,6 +19,7 @@ const userSchema = new Schema({
   block: { type: Boolean, default: false },
   location: { type: Object },
   notify: { type: Boolean, default: true },
+  popupView: { type: Boolean },
 });
 
 // userSchema.plugin(uniqueValidator);
