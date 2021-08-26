@@ -162,7 +162,7 @@ const countFeatureAdsRequests = async (req, res) => {
 };
 
 const getActiveFeatureAds = async (req, res) => {
-  console.log("yooo");
+  console.log("yooo calling");
   let ads;
   try {
     ads = await Featuread.find({ sold: false });
@@ -231,6 +231,7 @@ const getFeatureRequestsImages = async (req, res) => {
   let images;
   try {
     images = await Ad.find({ _id: adId }, "images");
+    // console.log(images);
     res.json({ images: images });
   } catch (err) {
     console.log(err);
@@ -306,9 +307,42 @@ const adsStats = async (req, res) => {
   }
 };
 
+const getFeatureRequestsImage = async (adId) => {
+  console.log("hello g images");
+  // const { adId } = req.body;
+  let images;
+  try {
+    images = await Ad.find({ _id: adId }, "images");
+    // console.log(images[0].images);
+    return images[0].images;
+  } catch (err) {
+    return { err };
+  }
+};
+
+const getCountFeatureAds = async () => {
+  // console.log("hello g");
+  let ads;
+  try {
+    ads = await Featuread.countDocuments({});
+    return ads;
+  } catch (err) {
+    console.log(err);
+    res.json({
+      success: false,
+      data: err,
+      message: "Error fectching Ads",
+    });
+    return;
+  }
+  console.log(ads);
+  // res.json({ ads: ads });
+};
+
 const makeFeatureAd = async (req, res) => {
   // console.log(req.body);
   // const { type, id, featureAd, featureAdReviewed, featureAdRequest } = req.body;
+  console.log(req.body.images, "i am length");
   const {
     title,
     category,
@@ -328,6 +362,21 @@ const makeFeatureAd = async (req, res) => {
     featureAdRequest,
     _id,
   } = req.body;
+  console.log(_id);
+
+  let adsCount = await getCountFeatureAds();
+  console.log(adsCount, "i am ads count");
+
+  if (adsCount === 4) {
+    res.json({
+      success: false,
+      message: "Feature Ad limit is full",
+    });
+    return;
+  }
+
+  let adImages = await getFeatureRequestsImage(_id);
+  // console.log(adImages);
 
   if (type === "accept") {
     const createdAd = new Featuread({
@@ -335,7 +384,7 @@ const makeFeatureAd = async (req, res) => {
       category,
       description,
       price,
-      images,
+      images: adImages,
       location,
       contactDetails,
       negotiable,
@@ -381,7 +430,6 @@ const makeFeatureAd = async (req, res) => {
                 }
               }
             );
-
             emailSender(
               contactDetails.email,
               "Your Ad Update",
@@ -547,13 +595,13 @@ const placeAd = async (req, res) => {
 };
 
 const getUserAds = async (req, res) => {
-  // console.log(req.body);
+  console.log(req.body);
   const { id } = req.body;
   console.log(id);
   let ads;
 
   try {
-    ads = await Ad.find({ user: id });
+    ads = await Ad.find({ user: id }, "-images");
     // console.log(ads);
   } catch (err) {
     console.log("error", err);
@@ -1266,14 +1314,14 @@ const emailSender = async (email, subject, description) => {
       requireTLS: true,
       service: "gmail",
       auth: {
-        user: "queryaidataron@gmail.com", // generated ethereal user
-        pass: "nwnxovucjfoqqwww", // generated ethereal password
+        user: "adsclassified90@gmail.com", // generated ethereal user
+        pass: "xswqspbebgwbxevn", // generated ethereal password
       },
     });
 
     // setup email data with unicode symbols
     let mailOptions = {
-      from: '"Vinted.CI" <queryaidataron@gmail.com>', // sender address
+      from: '"Vinted.CI" <adsclassified90@gmail.com>', // sender address
       to: email, // list of receivers
       subject: subject, // Subject line
       // text: details, // plain text body

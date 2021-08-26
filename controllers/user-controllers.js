@@ -11,6 +11,9 @@ const vonage = new Vonage({
   apiKey: "5584758f",
   apiSecret: "s5lzX8hL5KokIen7",
 });
+const accountSid = "ACecb56fbce28310a560c74c25019e5f56";
+const authToken = "82cca65f20257789e37b6fdda135540c";
+const client = require("twilio")(accountSid, authToken);
 
 const getUsers = async (req, res, next) => {
   let users;
@@ -66,16 +69,16 @@ const sendEmailOtp = (email, otp) => {
       requireTLS: true,
       service: "gmail",
       auth: {
-        user: "queryaidataron@gmail.com", // generated ethereal user
-        pass: "nwnxovucjfoqqwww", // generated ethereal password
+        user: "adsclassified90@gmail.com", // generated ethereal user
+        pass: "xswqspbebgwbxevn", // generated ethereal password
       },
     });
 
     // setup email data with unicode symbols
     let mailOptions = {
-      from: '"User Query" <queryaidataron@gmail.com>', // sender address
+      from: '"Vinted.CI" <adsclassified90@gmail.com>', // sender address
       to: email, // list of receivers
-      // subject: subject, // Subject line
+      subject: "Email Verification", // Subject line
       // text: details, // plain text body
       html: output, // html body
     };
@@ -109,19 +112,28 @@ const sendPhoneOtp = (phone, otp) => {
   const to = phone;
   const text = `Your Verification OTP is ${otp}`;
 
-  vonage.message.sendSms(from, to, text, (err, responseData) => {
-    if (err) {
-      console.log(err);
-    } else {
-      if (responseData.messages[0]["status"] === "0") {
-        console.log("Message sent successfully.");
-      } else {
-        console.log(
-          `Message failed with error: ${responseData.messages[0]["error-text"]}`
-        );
-      }
-    }
-  });
+  client.messages
+    .create({
+      to: phone,
+      body: `Your Verification OTP is ${otp}`,
+      from: "+19402837452",
+    })
+    .then((message) => console.log(message.sid))
+    .done();
+
+  // vonage.message.sendSms(from, to, text, (err, responseData) => {
+  //   if (err) {
+  //     console.log(err);
+  //   } else {
+  //     if (responseData.messages[0]["status"] === "0") {
+  //       console.log("Message sent successfully.");
+  //     } else {
+  //       console.log(
+  //         `Message failed with error: ${responseData.messages[0]["error-text"]}`
+  //       );
+  //     }
+  //   }
+  // });
 };
 
 const signup = async (req, res, next) => {
@@ -130,47 +142,47 @@ const signup = async (req, res, next) => {
 
   if (username && email && password && phone) {
     let existingUser;
-    try {
-      existingUser = await User.findOne({ email: email });
+    // try {
+    //   existingUser = await User.findOne({ email: email });
 
-      if (existingUser) {
-        console.log("user already exists");
-        res.json({ message: "User Already Exists", success: false });
-        return;
-      }
-    } catch (err) {
-      // res.status(500).json({
-      //   message: "Signing up failed, please try again later.",
-      //   error: "500",
-      // });
-      // return;
-      res.json({
-        success: false,
-        data: err,
-        message: "Signing up failed, please try again later.",
-      });
-    }
+    //   if (existingUser) {
+    //     console.log("user already exists");
+    //     res.json({ message: "User Already Exists", success: false });
+    //     return;
+    //   }
+    // } catch (err) {
+    //   // res.status(500).json({
+    //   //   message: "Signing up failed, please try again later.",
+    //   //   error: "500",
+    //   // });
+    //   // return;
+    //   res.json({
+    //     success: false,
+    //     data: err,
+    //     message: "Signing up failed, please try again later.",
+    //   });
+    // }
 
-    try {
-      existingUser = await User.findOne({ phone: phone });
+    // try {
+    //   existingUser = await User.findOne({ phone: phone });
 
-      if (existingUser) {
-        console.log("user already exists");
-        res.json({ message: "User Phone Already Exists", success: false });
-        return;
-      }
-    } catch (err) {
-      // res.status(500).json({
-      //   message: "Signing up failed, please try again later.",
-      //   error: "500",
-      // });
-      // return;
-      res.json({
-        success: false,
-        data: err,
-        message: "Signing up failed, please try again later.",
-      });
-    }
+    //   if (existingUser) {
+    //     console.log("user already exists");
+    //     res.json({ message: "User Phone Already Exists", success: false });
+    //     return;
+    //   }
+    // } catch (err) {
+    //   // res.status(500).json({
+    //   //   message: "Signing up failed, please try again later.",
+    //   //   error: "500",
+    //   // });
+    //   // return;
+    //   res.json({
+    //     success: false,
+    //     data: err,
+    //     message: "Signing up failed, please try again later.",
+    //   });
+    // }
 
     let hashedPassword;
     try {
@@ -199,6 +211,8 @@ const signup = async (req, res, next) => {
       specialChars: false,
       alphabets: false,
     });
+    sendPhoneOtp(phone, otpPhone);
+    sendEmailOtp(email, otpEmail);
 
     const createdUser = new User({
       username,
@@ -211,58 +225,58 @@ const signup = async (req, res, next) => {
       otpPhone: otpPhone,
     });
 
-    try {
-      createdUser.save((err) => {
-        if (err) {
-          res.json({
-            success: false,
-            data: err,
-            message: "Signing up failed, please try again later.",
-          });
-          return;
-        } else {
-          let access_token;
+    // try {
+    //   createdUser.save((err) => {
+    //     if (err) {
+    //       res.json({
+    //         success: false,
+    //         data: err,
+    //         message: "Signing up failed, please try again later.",
+    //       });
+    //       return;
+    //     } else {
+    //       let access_token;
 
-          try {
-            access_token = jwt.sign(
-              { userId: createdUser.id, email: createdUser.email },
-              "myprivatekey",
-              { expiresIn: "1h" }
-            );
-          } catch (err) {
-            res.json({
-              success: false,
-              data: err,
-              message: "Signing up failed, please try again later.",
-            });
-            return;
-          }
-          console.log({ message: "user created", createdUser });
+    //       try {
+    //         access_token = jwt.sign(
+    //           { userId: createdUser.id, email: createdUser.email },
+    //           "myprivatekey",
+    //           { expiresIn: "1h" }
+    //         );
+    //       } catch (err) {
+    //         res.json({
+    //           success: false,
+    //           data: err,
+    //           message: "Signing up failed, please try again later.",
+    //         });
+    //         return;
+    //       }
+    //       console.log({ message: "user created", createdUser });
 
-          sendEmailOtp(email, otpEmail);
-          sendPhoneOtp(phone, otpPhone);
+    //       sendEmailOtp(email, otpEmail);
+    //       sendPhoneOtp(phone, otpPhone);
 
-          res.status(200).send({
-            message: "Welcome to VINTED.CI",
+    //       res.status(200).send({
+    //         message: "Welcome to VINTED.CI",
 
-            username: createdUser.username,
-            email: createdUser.email,
-            access_token: access_token,
-            id: createdUser._id,
-            phone: createdUser.phone,
-            success: true,
-            emailVerified: createdUser.emailVerified,
-            phoneVerified: createdUser.phoneVerified,
-          });
-        }
-      });
-    } catch (err) {
-      res.json({
-        success: false,
-        data: err,
-        message: "Signing up failed, please try again later.",
-      });
-    }
+    //         username: createdUser.username,
+    //         email: createdUser.email,
+    //         access_token: access_token,
+    //         id: createdUser._id,
+    //         phone: createdUser.phone,
+    //         success: true,
+    //         emailVerified: createdUser.emailVerified,
+    //         phoneVerified: createdUser.phoneVerified,
+    //       });
+    //     }
+    //   });
+    // } catch (err) {
+    //   res.json({
+    //     success: false,
+    //     data: err,
+    //     message: "Signing up failed, please try again later.",
+    //   });
+    // }
   } else {
     res.json({ message: "Please Enter all the Details", success: false });
   }
