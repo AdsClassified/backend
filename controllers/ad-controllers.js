@@ -602,6 +602,15 @@ const getUserAds = async (req, res) => {
 
   try {
     ads = await Ad.find({ user: id }, "-images");
+    let reverse = ads.map((item) => item).reverse();
+
+    if (ads) {
+      res.json({
+        success: true,
+        ads: reverse,
+        message: "Ads Found",
+      });
+    }
     // console.log(ads);
   } catch (err) {
     console.log("error", err);
@@ -611,16 +620,6 @@ const getUserAds = async (req, res) => {
       message: "Finding Ad failed",
     });
     return;
-  }
-
-  let reverse = ads.map((item) => item).reverse();
-
-  if (ads) {
-    res.json({
-      success: true,
-      ads: reverse,
-      message: "Ads Found",
-    });
   }
 };
 
