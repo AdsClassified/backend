@@ -594,8 +594,37 @@ const placeAd = async (req, res) => {
   }
 };
 
-const getUserAds = async (req, res) => {
-  console.log(req.body);
+// const getUserAds = async (req, res) => {
+//   console.log(req.body);
+//   const { id } = req.body;
+//   console.log(id);
+//   let ads;
+
+//   try {
+//     ads = await Ad.find({ user: id }, "-images");
+//     let reverse = ads.map((item) => item).reverse();
+
+//     if (ads) {
+//       res.json({
+//         success: true,
+//         ads: reverse,
+//         message: "Ads Found",
+//       });
+//     }
+//     // console.log(ads);
+//   } catch (err) {
+//     console.log("error", err);
+//     res.json({
+//       success: false,
+//       data: err,
+//       message: "Finding Ad failed",
+//     });
+//     return;
+//   }
+// };
+
+const getSingleUserAds = async (req, res) => {
+  console.log(req.body, "I am body");
   const { id } = req.body;
   console.log(id);
   let ads;
@@ -1531,7 +1560,7 @@ module.exports = {
   getImages,
   getActiveAds,
   placeAd,
-  getUserAds,
+  // getUserAds,
   deleteAd,
   activeAd,
   editAd,
@@ -1563,4 +1592,5 @@ module.exports = {
   getAdsByCategories,
   getFeatureImages,
   getFeatureRequestsImages,
+  getSingleUserAds,
 };

@@ -11,7 +11,7 @@ router.get("/countads", adController.countAds);
 router.get("/adsstats", adController.adsStats);
 router.post("/getad", adController.getAd);
 
-router.post("/getuserads", adController.getUserAds);
+router.post("/getuserads", adController.getSingleUserAds);
 
 //ADD AD
 router.post("/", adController.placeAd);
