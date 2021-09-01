@@ -142,47 +142,47 @@ const signup = async (req, res, next) => {
 
   if (username && email && password && phone) {
     let existingUser;
-    // try {
-    //   existingUser = await User.findOne({ email: email });
+    try {
+      existingUser = await User.findOne({ email: email });
 
-    //   if (existingUser) {
-    //     console.log("user already exists");
-    //     res.json({ message: "User Already Exists", success: false });
-    //     return;
-    //   }
-    // } catch (err) {
-    //   // res.status(500).json({
-    //   //   message: "Signing up failed, please try again later.",
-    //   //   error: "500",
-    //   // });
-    //   // return;
-    //   res.json({
-    //     success: false,
-    //     data: err,
-    //     message: "Signing up failed, please try again later.",
-    //   });
-    // }
+      if (existingUser) {
+        console.log("user already exists");
+        res.json({ message: "User Already Exists", success: false });
+        return;
+      }
+    } catch (err) {
+      // res.status(500).json({
+      //   message: "Signing up failed, please try again later.",
+      //   error: "500",
+      // });
+      // return;
+      res.json({
+        success: false,
+        data: err,
+        message: "Signing up failed, please try again later.",
+      });
+    }
 
-    // try {
-    //   existingUser = await User.findOne({ phone: phone });
+    try {
+      existingUser = await User.findOne({ phone: phone });
 
-    //   if (existingUser) {
-    //     console.log("user already exists");
-    //     res.json({ message: "User Phone Already Exists", success: false });
-    //     return;
-    //   }
-    // } catch (err) {
-    //   // res.status(500).json({
-    //   //   message: "Signing up failed, please try again later.",
-    //   //   error: "500",
-    //   // });
-    //   // return;
-    //   res.json({
-    //     success: false,
-    //     data: err,
-    //     message: "Signing up failed, please try again later.",
-    //   });
-    // }
+      if (existingUser) {
+        console.log("user already exists");
+        res.json({ message: "User Phone Already Exists", success: false });
+        return;
+      }
+    } catch (err) {
+      // res.status(500).json({
+      //   message: "Signing up failed, please try again later.",
+      //   error: "500",
+      // });
+      // return;
+      res.json({
+        success: false,
+        data: err,
+        message: "Signing up failed, please try again later.",
+      });
+    }
 
     let hashedPassword;
     try {
@@ -211,8 +211,6 @@ const signup = async (req, res, next) => {
       specialChars: false,
       alphabets: false,
     });
-    sendPhoneOtp(phone, otpPhone);
-    sendEmailOtp(email, otpEmail);
 
     const createdUser = new User({
       username,
@@ -225,58 +223,58 @@ const signup = async (req, res, next) => {
       otpPhone: otpPhone,
     });
 
-    // try {
-    //   createdUser.save((err) => {
-    //     if (err) {
-    //       res.json({
-    //         success: false,
-    //         data: err,
-    //         message: "Signing up failed, please try again later.",
-    //       });
-    //       return;
-    //     } else {
-    //       let access_token;
+    try {
+      createdUser.save((err) => {
+        if (err) {
+          res.json({
+            success: false,
+            data: err,
+            message: "Signing up failed, please try again later.",
+          });
+          return;
+        } else {
+          let access_token;
 
-    //       try {
-    //         access_token = jwt.sign(
-    //           { userId: createdUser.id, email: createdUser.email },
-    //           "myprivatekey",
-    //           { expiresIn: "1h" }
-    //         );
-    //       } catch (err) {
-    //         res.json({
-    //           success: false,
-    //           data: err,
-    //           message: "Signing up failed, please try again later.",
-    //         });
-    //         return;
-    //       }
-    //       console.log({ message: "user created", createdUser });
+          try {
+            access_token = jwt.sign(
+              { userId: createdUser.id, email: createdUser.email },
+              "myprivatekey",
+              { expiresIn: "1h" }
+            );
+          } catch (err) {
+            res.json({
+              success: false,
+              data: err,
+              message: "Signing up failed, please try again later.",
+            });
+            return;
+          }
+          console.log({ message: "user created", createdUser });
 
-    //       sendEmailOtp(email, otpEmail);
-    //       sendPhoneOtp(phone, otpPhone);
+          sendEmailOtp(email, otpEmail);
+          sendPhoneOtp(phone, otpPhone);
 
-    //       res.status(200).send({
-    //         message: "Welcome to VINTED.CI",
+          res.status(200).send({
+            message: "Welcome to VINTED.CI",
 
-    //         username: createdUser.username,
-    //         email: createdUser.email,
-    //         access_token: access_token,
-    //         id: createdUser._id,
-    //         phone: createdUser.phone,
-    //         success: true,
-    //         emailVerified: createdUser.emailVerified,
-    //         phoneVerified: createdUser.phoneVerified,
-    //       });
-    //     }
-    //   });
-    // } catch (err) {
-    //   res.json({
-    //     success: false,
-    //     data: err,
-    //     message: "Signing up failed, please try again later.",
-    //   });
-    // }
+            username: createdUser.username,
+            email: createdUser.email,
+            access_token: access_token,
+            id: createdUser._id,
+            phone: createdUser.phone,
+            success: true,
+            emailVerified: createdUser.emailVerified,
+            phoneVerified: createdUser.phoneVerified,
+          });
+        }
+      });
+    } catch (err) {
+      res.json({
+        success: false,
+        data: err,
+        message: "Signing up failed, please try again later.",
+      });
+    }
   } else {
     res.json({ message: "Please Enter all the Details", success: false });
   }
