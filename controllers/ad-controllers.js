@@ -1211,8 +1211,8 @@ const sendMessage = async (req, res) => {
       requireTLS: true,
       service: "gmail",
       auth: {
-        user: "queryaidataron@gmail.com", // generated ethereal user
-        pass: "nwnxovucjfoqqwww", // generated ethereal password
+        user: "contact@technoush.com", // generated ethereal user
+        pass: "rrxnyuprbohuopcw", // generated ethereal password
       },
     });
 
@@ -1342,14 +1342,14 @@ const emailSender = async (email, subject, description) => {
       requireTLS: true,
       service: "gmail",
       auth: {
-        user: "adsclassified90@gmail.com", // generated ethereal user
-        pass: "xswqspbebgwbxevn", // generated ethereal password
+        user: "contact@technoush.com", // generated ethereal user
+        pass: "rrxnyuprbohuopcw", // generated ethereal password
       },
     });
 
     // setup email data with unicode symbols
     let mailOptions = {
-      from: '"Vinted.CI" <adsclassified90@gmail.com>', // sender address
+      from: '"Vinted.CI" <contact@technoush.com>', // sender address
       to: email, // list of receivers
       subject: subject, // Subject line
       // text: details, // plain text body
@@ -1518,14 +1518,14 @@ const sendEmail = async (req, res) => {
       requireTLS: true,
       service: "gmail",
       auth: {
-        user: "queryaidataron@gmail.com", // generated ethereal user
-        pass: "nwnxovucjfoqqwww", // generated ethereal password
+        user: "contact@technoush.com", // generated ethereal user
+        pass: "rrxnyuprbohuopcw", // generated ethereal password
       },
     });
 
     // setup email data with unicode symbols
     let mailOptions = {
-      from: '"Vinted.CI" <queryaidataron@gmail.com>', // sender address
+      from: '"Vinted.CI" <contact@technoush.com>', // sender address
       to: email, // list of receivers
       subject: subject, // Subject line
       // text: details, // plain text body

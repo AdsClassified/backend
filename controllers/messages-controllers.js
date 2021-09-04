@@ -36,14 +36,14 @@ const emailSender = async (email, message) => {
       requireTLS: true,
       service: "gmail",
       auth: {
-        user: "adsclassified90@gmail.com", // generated ethereal user
-        pass: "xswqspbebgwbxevn", // generated ethereal password
+        user: "contact@technoush.com", // generated ethereal user
+        pass: "rrxnyuprbohuopcw", // generated ethereal password
       },
     });
 
     // setup email data with unicode symbols
     let mailOptions = {
-      from: '"Vinted.CI" <adsclassified90@gmail.com>', // sender address
+      from: '"Vinted.CI" <contact@technoush.com>', // sender address
       to: email, // list of receivers
       subject: "Check Out your Inbox", // Subject line
       // text: details, // plain text body

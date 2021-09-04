@@ -12,7 +12,7 @@ const vonage = new Vonage({
   apiSecret: "s5lzX8hL5KokIen7",
 });
 const accountSid = "ACecb56fbce28310a560c74c25019e5f56";
-const authToken = "82cca65f20257789e37b6fdda135540c";
+const authToken = "e9eb1d5b7035992e887f63bde8f7379a";
 const client = require("twilio")(accountSid, authToken);
 
 const getUsers = async (req, res, next) => {
@@ -69,14 +69,14 @@ const sendEmailOtp = (email, otp) => {
       requireTLS: true,
       service: "gmail",
       auth: {
-        user: "adsclassified90@gmail.com", // generated ethereal user
-        pass: "xswqspbebgwbxevn", // generated ethereal password
+        user: "contact@technoush.com", // generated ethereal user
+        pass: "rrxnyuprbohuopcw", // generated ethereal password
       },
     });
 
     // setup email data with unicode symbols
     let mailOptions = {
-      from: '"Vinted.CI" <adsclassified90@gmail.com>', // sender address
+      from: '"Vinted.CI" <contact@technoush.com>', // sender address
       to: email, // list of receivers
       subject: "Email Verification", // Subject line
       // text: details, // plain text body
@@ -107,19 +107,19 @@ const sendEmailOtp = (email, otp) => {
   }
 };
 
-const sendPhoneOtp = (phone, otp) => {
+const sendPhoneOtp = async (phone, otp) => {
+  console.log(phone, otp);
   const from = "Vinted.CI";
   const to = phone;
   const text = `Your Verification OTP is ${otp}`;
 
-  client.messages
-    .create({
-      to: phone,
-      body: `Your Verification OTP is ${otp}`,
-      from: "+19402837452",
-    })
-    .then((message) => console.log(message.sid))
-    .done();
+  let res = await client.messages.create({
+    to: `+${phone}`,
+    body: `Your Verification OTP is ${otp}`,
+    from: "+19402837452",
+  });
+
+  return res;
 
   // vonage.message.sendSms(from, to, text, (err, responseData) => {
   //   if (err) {
@@ -147,15 +147,10 @@ const signup = async (req, res, next) => {
 
       if (existingUser) {
         console.log("user already exists");
-        res.json({ message: "User Already Exists", success: false });
+        res.json({ message: "User Email Already Exists", success: false });
         return;
       }
     } catch (err) {
-      // res.status(500).json({
-      //   message: "Signing up failed, please try again later.",
-      //   error: "500",
-      // });
-      // return;
       res.json({
         success: false,
         data: err,
@@ -172,11 +167,6 @@ const signup = async (req, res, next) => {
         return;
       }
     } catch (err) {
-      // res.status(500).json({
-      //   message: "Signing up failed, please try again later.",
-      //   error: "500",
-      // });
-      // return;
       res.json({
         success: false,
         data: err,
@@ -223,61 +213,122 @@ const signup = async (req, res, next) => {
       otpPhone: otpPhone,
     });
 
+    sendEmailOtp(email, otpEmail);
     try {
-      createdUser.save((err) => {
-        if (err) {
-          res.json({
-            success: false,
-            data: err,
-            message: "Signing up failed, please try again later.",
-          });
-          return;
-        } else {
-          let access_token;
+      let phoneOtpResponse = await sendPhoneOtp(phone, otpPhone);
 
-          try {
-            access_token = jwt.sign(
-              { userId: createdUser.id, email: createdUser.email },
-              "myprivatekey",
-              { expiresIn: "1h" }
-            );
-          } catch (err) {
+      console.log(phoneOtpResponse, "this is response");
+      try {
+        createdUser.save((err) => {
+          if (err) {
             res.json({
               success: false,
               data: err,
               message: "Signing up failed, please try again later.",
             });
             return;
+          } else {
+            let access_token;
+
+            try {
+              access_token = jwt.sign(
+                { userId: createdUser.id, email: createdUser.email },
+                "myprivatekey",
+                { expiresIn: "1h" }
+              );
+            } catch (err) {
+              res.json({
+                success: false,
+                data: err,
+                message: "Signing up failed, please try again later.",
+              });
+              return;
+            }
+            console.log({ message: "user created", createdUser });
+
+            res.status(200).send({
+              message: "Welcome to VINTED.CI",
+
+              username: createdUser.username,
+              email: createdUser.email,
+              access_token: access_token,
+              id: createdUser._id,
+              phone: createdUser.phone,
+              success: true,
+              emailVerified: createdUser.emailVerified,
+              phoneVerified: createdUser.phoneVerified,
+            });
           }
-          console.log({ message: "user created", createdUser });
-
-          sendEmailOtp(email, otpEmail);
-          sendPhoneOtp(phone, otpPhone);
-
-          res.status(200).send({
-            message: "Welcome to VINTED.CI",
-
-            username: createdUser.username,
-            email: createdUser.email,
-            access_token: access_token,
-            id: createdUser._id,
-            phone: createdUser.phone,
-            success: true,
-            emailVerified: createdUser.emailVerified,
-            phoneVerified: createdUser.phoneVerified,
-          });
-        }
-      });
+        });
+      } catch (err) {
+        res.json({
+          success: false,
+          data: err,
+          message: "Signing up failed, please try again later.",
+        });
+      }
     } catch (err) {
-      res.json({
-        success: false,
-        data: err,
-        message: "Signing up failed, please try again later.",
-      });
+      console.log(err, "i am err");
+      res.json({ message: "Invalid Phone Number", success: false });
     }
   } else {
     res.json({ message: "Please Enter all the Details", success: false });
   }
+};
+
+const requestNewPhoneOtp = async (req, res) => {
+  const { userId, phone } = req.body;
+  let otpPhone = otpGenerator.generate(4, {
+    upperCase: false,
+    specialChars: false,
+    alphabets: false,
+  });
+  sendPhoneOtp(phone, otpPhone);
+
+  User.update(
+    { _id: userId },
+    { $set: { otpPhone: otpPhone } },
+    function (err) {
+      if (!err) {
+        console.log("Otp Phone Updated");
+        return res.json({ success: true, message: "Phone Otp Updated" });
+      } else {
+        res.json({
+          success: false,
+          message: "Something went wrong",
+        });
+        return;
+      }
+    }
+  );
+};
+
+const requestNewEmailOtp = async (req, res) => {
+  console.log(req.body);
+  const { userId, email } = req.body;
+  let otpEmail = otpGenerator.generate(4, {
+    upperCase: false,
+    specialChars: false,
+    alphabets: false,
+  });
+  sendEmailOtp(email, otpEmail);
+
+  User.updateOne(
+    { _id: userId },
+    { $set: { otpEmail: otpEmail } },
+    function (err) {
+      if (!err) {
+        console.log("Otp Email Updated");
+        return res.json({ success: true, message: "Email Otp Updated" });
+      } else {
+        res.json({
+          success: false,
+          message: "Something went wrong",
+        });
+        return;
+      }
+    }
+  );
 };
 
 const login = async (req, res, next) => {
@@ -1028,4 +1079,6 @@ module.exports = {
   deleteSearchActivity,
   getUserImage,
   updateUserLocation,
+  requestNewPhoneOtp,
+  requestNewEmailOtp,
 };
