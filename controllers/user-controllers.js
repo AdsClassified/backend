@@ -12,7 +12,7 @@ const vonage = new Vonage({
   apiSecret: "s5lzX8hL5KokIen7",
 });
 const accountSid = "ACecb56fbce28310a560c74c25019e5f56";
-const authToken = "e9eb1d5b7035992e887f63bde8f7379a";
+const authToken = "057f7474ebc14d91de823fa4c661ed6d";
 const client = require("twilio")(accountSid, authToken);
 
 const getUsers = async (req, res, next) => {
@@ -49,8 +49,9 @@ const getUserImage = async (req, res, next) => {
 };
 
 const sendEmailOtp = (email, otp) => {
-  console.log(email, otp);
+  console.log(email, otp, "hello gggggg");
   if (otp && email) {
+    console.log("Things going good");
     const output = `
             <p>You Email Verification code</p>
             <h3>Vinted</h3>
@@ -70,7 +71,7 @@ const sendEmailOtp = (email, otp) => {
       service: "gmail",
       auth: {
         user: "contact@technoush.com", // generated ethereal user
-        pass: "rrxnyuprbohuopcw", // generated ethereal password
+        pass: "npakzcfbovcqxwxn", // generated ethereal password
       },
     });
 
@@ -86,6 +87,7 @@ const sendEmailOtp = (email, otp) => {
     // send mail with defined transport object
     transporter.sendMail(mailOptions, async (error, info) => {
       if (error) {
+        console.log(error, "I am error");
         return error;
       } else {
         console.log("Message sent: %s", info.messageId);
@@ -103,6 +105,7 @@ const sendEmailOtp = (email, otp) => {
     return true;
   } else {
     // res.status(401).json({ message: "Something went Wrong" });
+    console.log("There is problem");
     return false;
   }
 };
@@ -217,7 +220,7 @@ const signup = async (req, res, next) => {
     try {
       let phoneOtpResponse = await sendPhoneOtp(phone, otpPhone);
 
-      console.log(phoneOtpResponse, "this is response");
+      // console.log(phoneOtpResponse, "this is response");
       try {
         createdUser.save((err) => {
           if (err) {
@@ -269,6 +272,7 @@ const signup = async (req, res, next) => {
       }
     } catch (err) {
       console.log(err, "i am err");
+      console.log("hello");
       res.json({ message: "Invalid Phone Number", success: false });
     }
   } else {
