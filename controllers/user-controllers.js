@@ -217,64 +217,65 @@ const signup = async (req, res, next) => {
     });
 
     sendEmailOtp(email, otpEmail);
-    try {
-      let phoneOtpResponse = await sendPhoneOtp(phone, otpPhone);
+    // try {
+    // let phoneOtpResponse = await sendPhoneOtp(phone, otpPhone);
 
-      // console.log(phoneOtpResponse, "this is response");
-      try {
-        createdUser.save((err) => {
-          if (err) {
+    // console.log(phoneOtpResponse, "this is response");
+    try {
+      createdUser.save((err) => {
+        if (err) {
+          res.json({
+            success: false,
+            data: err,
+            message: "Signing up failed, please try again later.",
+          });
+          return;
+        } else {
+          let access_token;
+
+          try {
+            access_token = jwt.sign(
+              { userId: createdUser.id, email: createdUser.email },
+              "myprivatekey",
+              { expiresIn: "1h" }
+            );
+          } catch (err) {
             res.json({
               success: false,
               data: err,
               message: "Signing up failed, please try again later.",
             });
             return;
-          } else {
-            let access_token;
-
-            try {
-              access_token = jwt.sign(
-                { userId: createdUser.id, email: createdUser.email },
-                "myprivatekey",
-                { expiresIn: "1h" }
-              );
-            } catch (err) {
-              res.json({
-                success: false,
-                data: err,
-                message: "Signing up failed, please try again later.",
-              });
-              return;
-            }
-            console.log({ message: "user created", createdUser });
-
-            res.status(200).send({
-              message: "Welcome to VINTED.CI",
-
-              username: createdUser.username,
-              email: createdUser.email,
-              access_token: access_token,
-              id: createdUser._id,
-              phone: createdUser.phone,
-              success: true,
-              emailVerified: createdUser.emailVerified,
-              phoneVerified: createdUser.phoneVerified,
-            });
           }
-        });
-      } catch (err) {
-        res.json({
-          success: false,
-          data: err,
-          message: "Signing up failed, please try again later.",
-        });
-      }
+          console.log({ message: "user created", createdUser });
+
+          res.status(200).send({
+            message: "Welcome to VINTED.CI",
+
+            username: createdUser.username,
+            email: createdUser.email,
+            access_token: access_token,
+            id: createdUser._id,
+            phone: createdUser.phone,
+            success: true,
+            emailVerified: createdUser.emailVerified,
+            phoneVerified: createdUser.phoneVerified,
+          });
+        }
+      });
     } catch (err) {
-      console.log(err, "i am err");
-      console.log("hello");
-      res.json({ message: "Invalid Phone Number", success: false });
+      res.json({
+        success: false,
+        data: err,
+        message: "Signing up failed, please try again later.",
+      });
     }
+    // }
+    // catch (err) {
+    //   console.log(err, "i am err");
+    //   console.log("hello");
+    //   res.json({ message: "Invalid Phone Number", success: false });
+    // }
   } else {
     res.json({ message: "Please Enter all the Details", success: false });
   }
@@ -333,6 +334,78 @@ const requestNewEmailOtp = async (req, res) => {
       }
     }
   );
+};
+
+const requestForgotOtp = async (req, res) => {
+  console.log(req.body);
+  const { email } = req.body;
+  let otpEmail = otpGenerator.generate(4, {
+    upperCase: false,
+    specialChars: false,
+    alphabets: false,
+  });
+  sendEmailOtp(email, otpEmail);
+
+  res.json({ success: true, message: "OTP Sent to Email", otp: otpEmail });
+  return;
+};
+
+const newPassword = async (req, res) => {
+  console.log(req.body);
+
+  const { newPassword, email } = req.body;
+  // console.log(newPassword, email);
+
+  if (newPassword && email) {
+    let hashedPassword;
+    try {
+      hashedPassword = await bcrypt.hash(newPassword, 12);
+    } catch (err) {
+      // console.log("Error hashing password", err);
+
+      res.json({
+        success: false,
+        data: err,
+        message: "Something went wrong",
+      });
+      return;
+    }
+
+    // console.log(hashedPassword);
+
+    try {
+      await User.updateOne(
+        { email: email },
+        { $set: { password: hashedPassword } },
+        function (err) {
+          if (!err) {
+            // console.log("Updated");
+            return res.json({ success: true, message: "Password Updated" });
+          } else {
+            // console.log(err);
+            res.json({
+              success: false,
+              data: err,
+              message: "Something went wrong",
+            });
+            return;
+          }
+        }
+      );
+    } catch (err) {
+      // console.log(err);
+      res.json({
+        success: false,
+        data: err,
+        message: "Something went wrong",
+      });
+    }
+  } else {
+    res.json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
 };
 
 const login = async (req, res, next) => {
@@ -462,19 +535,30 @@ const login = async (req, res, next) => {
     try {
       isValidPassword = await bcrypt.compare(password, existingUser.password);
     } catch (err) {
-      const error = new HttpError(
-        "Could not log you in, please check your credentials and try again.",
-        500
-      );
-      return next(error);
+      // const error = new HttpError(
+      //   "Could not log you in, please check your credentials and try again.",
+      //   500
+      // );
+      // return next(error);
+      console.log("hellloooooooo ggggg");
+      res.json({
+        success: false,
+        message:
+          "Could not log you in, please check your credentials and try again.",
+      });
     }
 
     if (!isValidPassword) {
-      const error = new HttpError(
-        "Invalid credentials, could not log you in.",
-        403
-      );
-      return next(error);
+      // const error = new HttpError(
+      //   "Invalid credentials, could not log you in.",
+      //   403
+      // );
+      // return next(error);
+      res.json({
+        success: false,
+        message:
+          "Could not log you in, please check your credentials and try again.",
+      });
     }
 
     let access_token;
@@ -485,11 +569,16 @@ const login = async (req, res, next) => {
         { expiresIn: "1h" }
       );
     } catch (err) {
-      const error = new HttpError(
-        "Logging in failed, please try again later.",
-        500
-      );
-      return next(error);
+      // const error = new HttpError(
+      //   "Logging in failed, please try again later.",
+      //   500
+      // );
+      // return next(error);
+      res.json({
+        success: false,
+        message:
+          "Could not log you in, please check your credentials and try again.",
+      });
     }
 
     console.log(existingUser.popupView);
@@ -1085,4 +1174,6 @@ module.exports = {
   updateUserLocation,
   requestNewPhoneOtp,
   requestNewEmailOtp,
+  requestForgotOtp,
+  newPassword,
 };

@@ -14,6 +14,9 @@ router.post("/register/emailverify", usersController.emailverify);
 router.post("/register/phoneverify", usersController.phoneverify);
 router.post("/register/requestphoneotp", usersController.requestNewPhoneOtp);
 router.post("/register/requestemailotp", usersController.requestNewEmailOtp);
+router.post("/register/requestforgototp", usersController.requestForgotOtp);
+router.post("/register/sendnewpassword", usersController.newPassword);
+
 router.post("/login", usersController.login);
 router.post("/fblogin", usersController.fbLogin);
 
