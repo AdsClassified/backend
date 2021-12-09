@@ -11,8 +11,8 @@ const vonage = new Vonage({
   apiKey: "5584758f",
   apiSecret: "s5lzX8hL5KokIen7",
 });
-const accountSid = "ACecb56fbce28310a560c74c25019e5f56";
-const authToken = "057f7474ebc14d91de823fa4c661ed6d";
+const accountSid = "ACf75814aacdeec55bfd945d18d757cae9";
+const authToken = "bff80c6aa2a44ff9d1487c0cf4ae1119";
 const client = require("twilio")(accountSid, authToken);
 
 const getUsers = async (req, res, next) => {
@@ -119,7 +119,7 @@ const sendPhoneOtp = async (phone, otp) => {
   let res = await client.messages.create({
     to: `+${phone}`,
     body: `Your Verification OTP is ${otp}`,
-    from: "+19402837452",
+    from: "+17197458334",
   });
 
   return res;
