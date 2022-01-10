@@ -12,7 +12,7 @@ const vonage = new Vonage({
   apiSecret: "s5lzX8hL5KokIen7",
 });
 const accountSid = "ACf75814aacdeec55bfd945d18d757cae9";
-const authToken = "bff80c6aa2a44ff9d1487c0cf4ae1119";
+const authToken = "c0faa55b7d23843bf18c99844de3cf2d";
 const client = require("twilio")(accountSid, authToken);
 
 const getUsers = async (req, res, next) => {
@@ -217,65 +217,64 @@ const signup = async (req, res, next) => {
     });
 
     sendEmailOtp(email, otpEmail);
-    // try {
-    // let phoneOtpResponse = await sendPhoneOtp(phone, otpPhone);
-
-    // console.log(phoneOtpResponse, "this is response");
     try {
-      createdUser.save((err) => {
-        if (err) {
-          res.json({
-            success: false,
-            data: err,
-            message: "Signing up failed, please try again later.",
-          });
-          return;
-        } else {
-          let access_token;
+      let phoneOtpResponse = await sendPhoneOtp(phone, otpPhone);
 
-          try {
-            access_token = jwt.sign(
-              { userId: createdUser.id, email: createdUser.email },
-              "myprivatekey",
-              { expiresIn: "1h" }
-            );
-          } catch (err) {
+      console.log(phoneOtpResponse, "this is response");
+      try {
+        createdUser.save((err) => {
+          if (err) {
             res.json({
               success: false,
               data: err,
               message: "Signing up failed, please try again later.",
             });
             return;
+          } else {
+            let access_token;
+
+            try {
+              access_token = jwt.sign(
+                { userId: createdUser.id, email: createdUser.email },
+                "myprivatekey",
+                { expiresIn: "1h" }
+              );
+            } catch (err) {
+              res.json({
+                success: false,
+                data: err,
+                message: "Signing up failed, please try again later.",
+              });
+              return;
+            }
+            console.log({ message: "user created", createdUser });
+
+            res.status(200).send({
+              message: "Welcome to VINTED.CI",
+
+              username: createdUser.username,
+              email: createdUser.email,
+              access_token: access_token,
+              id: createdUser._id,
+              phone: createdUser.phone,
+              success: true,
+              emailVerified: createdUser.emailVerified,
+              phoneVerified: createdUser.phoneVerified,
+            });
           }
-          console.log({ message: "user created", createdUser });
-
-          res.status(200).send({
-            message: "Welcome to VINTED.CI",
-
-            username: createdUser.username,
-            email: createdUser.email,
-            access_token: access_token,
-            id: createdUser._id,
-            phone: createdUser.phone,
-            success: true,
-            emailVerified: createdUser.emailVerified,
-            phoneVerified: createdUser.phoneVerified,
-          });
-        }
-      });
+        });
+      } catch (err) {
+        res.json({
+          success: false,
+          data: err,
+          message: "Signing up failed, please try again later.",
+        });
+      }
     } catch (err) {
-      res.json({
-        success: false,
-        data: err,
-        message: "Signing up failed, please try again later.",
-      });
+      console.log(err, "i am err");
+      console.log("hello");
+      res.json({ message: "Invalid Phone Number", success: false });
     }
-    // }
-    // catch (err) {
-    //   console.log(err, "i am err");
-    //   console.log("hello");
-    //   res.json({ message: "Invalid Phone Number", success: false });
-    // }
   } else {
     res.json({ message: "Please Enter all the Details", success: false });
   }
